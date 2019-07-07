@@ -1,0 +1,15 @@
+{
+  "name": "websocket-chat",
+  "version": "1.0.0",
+  "description": "serverless webchat application using aws",
+  "main": "handler.js",
+  "dependencies": {
+    "aws-sdk": "^2.488.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "yuta naito",
+  "license": "ISC"
+}
