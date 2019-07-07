@@ -1,7 +1,7 @@
 var AWS = require ('aws-sdk');
 AWS.config.update({ region : process.env.AWS_REGION});
 
-require('aws-sdk/client/apigatewaymanagementapi');
+// require('aws-sdk/client/apigatewaymanagementapi');
 
 var DDB = new AWS.DynamoDB({ apiVersion : "2012-10-08"});
 
@@ -12,13 +12,13 @@ exports.connect = async (event) => {
     var putParams = {
       TableName : 'websocket-room-table',
       Item : {
-        uniqueRoomId : 'aaa'
+        uniqueRoomId : {S:'aaa'}
       }
-    }
+    };
 
-    DynamoDB.put(putParams, function(err, data){
+    DDB.putItem(putParams, function(err, data){
       console.log("dynamo_err:", err);
-    })
+    });
 
     // TODO implement
     const response = {
