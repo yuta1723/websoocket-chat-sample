@@ -10,22 +10,30 @@ var docClient = new AWS.DynamoDB.DocumentClient();
 exports.connect = async (event) => {
     console.log('connect : ' + JSON.stringify(event));
 
-    // var putParams = {
-    //   TableName : 'websocket-room-table',
-    //   Item : {
-    //     uniqueRoomId : {S:'aaa'}
-    //   }
-    // };
-    //
-    // DDB.putItem(putParams, function(err, data){
-    //   console.log("dynamo_err:", err);
-    // });
+    if (event.queryStringParameters === undefined || event.queryStringParameters.roomId === undefined ) {
+        console.error("RoomId is empty");
+        return { statusCode: 400, body: JSON.stringify('Bad Request')};
+    }
 
+    if (event.queryStringParameters === undefined || event.queryStringParameters.businessId === undefined ) {
+        console.error("businessId is empty");
+        return { statusCode: 400, body: JSON.stringify('Bad Request')};
+    }
+
+    let roomId = event.queryStringParameters.roomId;
+    let businessId = event.queryStringParameters.businessId;
+    let subRoomId = '0';
+
+    console.log('roomId = ' + roomId + 'businessId = ' + businessId);
+
+    let uniqueRoomId = businessId + '_' + roomId + '_' + subRoomId;
     let params = {
         TableName : 'websocket-room-table',
         Item: {
-          uniqueRoomId : 'aaa',
-          roomId : 'bbb'
+          uniqueRoomId : uniqueRoomId,
+          roomId : roomId,
+          businessId : businessId,
+          subRoomId: subRoomId
         }
     };
 
