@@ -47,30 +47,14 @@ exports.connect = async (event) => {
         }
     };
 
-    docClient.get(getParams,function (err, data) {
-        if (err) {
-            console.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
-            return ; // エラーを返却する。
-        } else {
-            console.log("Get item:", JSON.stringify(data, null, 2));
+    var roomData = await docClient.get(getParams).promise();
 
-            if (!data.Item) {
-                // data = null or undefined ....
-
-                docClient.put(putParams,function(err, data) {
-                    if (err) {
-                        console.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
-                    } else {
-                        console.log("Added item:", JSON.stringify(data, null, 2));
-                    }
-                });
-            } else {
-              // データがある。
-              console.log('table is exist');
-            }
-
-        }
-    });
+    console.log('roomData = ' + JSON.stringify(roomData, null, 2));
+    if (isEmptyJson(roomData)) {
+        console.log('EMPTY');
+        var data = await docClient.put(putParams).promise();
+        console.log('data = ' + JSON.stringify(data, null, 2));
+    }
 
 
 
@@ -81,6 +65,10 @@ exports.connect = async (event) => {
     };
     return response;
 };
+
+function isEmptyJson(obj){
+  return !Object.keys(obj).length;
+}
 
 exports.disconnect = async (event) => {
     console.log('disconnect : ' + JSON.stringify(event));
