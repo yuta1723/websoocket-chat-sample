@@ -4,20 +4,38 @@ AWS.config.update({ region : process.env.AWS_REGION});
 // require('aws-sdk/client/apigatewaymanagementapi');
 
 var DDB = new AWS.DynamoDB({ apiVersion : "2012-10-08"});
+var docClient = new AWS.DynamoDB.DocumentClient();
 
 
 exports.connect = async (event) => {
     console.log('connect : ' + JSON.stringify(event));
 
-    var putParams = {
-      TableName : 'websocket-room-table',
-      Item : {
-        uniqueRoomId : {S:'aaa'}
-      }
+    // var putParams = {
+    //   TableName : 'websocket-room-table',
+    //   Item : {
+    //     uniqueRoomId : {S:'aaa'}
+    //   }
+    // };
+    //
+    // DDB.putItem(putParams, function(err, data){
+    //   console.log("dynamo_err:", err);
+    // });
+
+    let params = {
+        TableName : 'websocket-room-table',
+        Item: {
+          uniqueRoomId : 'aaa',
+          roomId : 'bbb'
+        }
     };
 
-    DDB.putItem(putParams, function(err, data){
-      console.log("dynamo_err:", err);
+
+    docClient.put(params,function(err, data) {
+        if (err) {
+            console.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
+        } else {
+            console.log("Added item:", JSON.stringify(data, null, 2));
+        }
     });
 
     // TODO implement
