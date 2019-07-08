@@ -6,6 +6,8 @@ AWS.config.update({ region : process.env.AWS_REGION});
 var DDB = new AWS.DynamoDB({ apiVersion : "2012-10-08"});
 var docClient = new AWS.DynamoDB.DocumentClient();
 
+const ROOM_TABLE_NAME = 'websocket-room-table';
+
 
 exports.connect = async (event) => {
     console.log('connect : ' + JSON.stringify(event));
@@ -27,8 +29,16 @@ exports.connect = async (event) => {
     console.log('roomId = ' + roomId + 'businessId = ' + businessId);
 
     let uniqueRoomId = businessId + '_' + roomId + '_' + subRoomId;
-    let params = {
-        TableName : 'websocket-room-table',
+
+    let getParams = {
+        TableName : ROOM_TABLE_NAME,
+        Key : {
+          uniqueRoomId : uniqueRoomId
+        }
+    };
+
+    let putParams = {
+        TableName : ROOM_TABLE_NAME,
         Item: {
           uniqueRoomId : uniqueRoomId,
           roomId : roomId,
@@ -37,14 +47,32 @@ exports.connect = async (event) => {
         }
     };
 
-
-    docClient.put(params,function(err, data) {
+    docClient.get(getParams,function (err, data) {
         if (err) {
             console.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
+            return ; // エラーを返却する。
         } else {
-            console.log("Added item:", JSON.stringify(data, null, 2));
+            console.log("Get item:", JSON.stringify(data, null, 2));
+
+            if (!data.Item) {
+                // data = null or undefined ....
+
+                docClient.put(putParams,function(err, data) {
+                    if (err) {
+                        console.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
+                    } else {
+                        console.log("Added item:", JSON.stringify(data, null, 2));
+                    }
+                });
+            } else {
+              // データがある。
+              console.log('table is exist');
+            }
+
         }
     });
+
+
 
     // TODO implement
     const response = {
