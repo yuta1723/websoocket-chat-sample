@@ -111,17 +111,52 @@ exports.disconnect = async (event) => {
     return response;
 };
 
+// 07/1
+// sendMessage アクションを受け取れないため、一旦defaultに実装する。
 exports.default = async (event) => {
     console.log('default : ' + JSON.stringify(event));
-    // TODO implement
-    const response = {
-        statusCode: 200,
-        body: JSON.stringify('Hello from Lambda!'),
+
+    var apigwManagementApi = new AWS.ApiGatewayManagementApi({
+        apiVersion: "2018-11-29",
+        endpoint: event.requestContext.domainName + "/" + event.requestContext.stage
+    });
+
+    var connectionId = event.requestContext.connectionId;
+    console.log('connectionID = ' + connectionId);
+
+    var postParams = {
+        Data: JSON.parse(event.body).data
     };
-    return response;
+
+    postParams.ConnectionId = connectionId;
+    apigwManagementApi.postToConnection(postParams).promise();
+
+    // const response = {
+    //       statusCode: 200,
+    //       body: JSON.stringify('Hello from Lambda!'),
+    // };
+    // return response;
+
+
+
 };
 
+exports.sendMessage = async (event) => {
+    console.log('sendMessage : ' + JSON.stringify(event));
 
+    let uniqueRoomId = event.uniqueRoomId;
+    console.log('uniqueRoomId = ' + uniqueRoomId);
+
+    var scanParams = {
+        TableName : CONNECTION_ID_TABLE_NAME,
+        FilterExpression: 'RoomId = :roomid',
+    };
+
+    // var connection = docClient.scan({
+    //
+    // })
+
+};
 
 //メモ
 // DynamoDBは、PK,SKを指定したDBの場合、更新、削除を行う際はPK,SK両方必要。
