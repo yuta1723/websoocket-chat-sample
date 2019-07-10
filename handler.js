@@ -12,15 +12,15 @@ const ROOM_TABLE_NAME = 'websocket-room-table';
 exports.connect = async (event) => {
     console.log('connect : ' + JSON.stringify(event));
 
-    // TODO implement
-    const response = {
-        statusCode: 200,
-        body: JSON.stringify('Hello from Lambda!'),
-    };
-    return response;
-};
+    if (event.queryStringParameters === undefined || event.queryStringParameters.roomId === undefined ) {
+        console.error("RoomId is empty");
+        return { statusCode: 400, body: JSON.stringify('Bad Request')};
+    }
 
-exports.joinRoom = async (event) => {
+    if (event.queryStringParameters === undefined || event.queryStringParameters.businessId === undefined ) {
+        console.error("businessId is empty");
+        return { statusCode: 400, body: JSON.stringify('Bad Request')};
+    }
 
     let roomId = event.queryStringParameters.roomId;
     let businessId = event.queryStringParameters.businessId;
@@ -33,17 +33,17 @@ exports.joinRoom = async (event) => {
     let getParams = {
         TableName : ROOM_TABLE_NAME,
         Key : {
-            uniqueRoomId : uniqueRoomId
+          uniqueRoomId : uniqueRoomId
         }
     };
 
     let putParams = {
         TableName : ROOM_TABLE_NAME,
         Item: {
-            uniqueRoomId : uniqueRoomId,
-            roomId : roomId,
-            businessId : businessId,
-            subRoomId: subRoomId
+          uniqueRoomId : uniqueRoomId,
+          roomId : roomId,
+          businessId : businessId,
+          subRoomId: subRoomId
         }
     };
 
@@ -56,10 +56,18 @@ exports.joinRoom = async (event) => {
         console.log('data = ' + JSON.stringify(data, null, 2));
     }
 
+
+
+    // TODO implement
+    const response = {
+        statusCode: 200,
+        body: JSON.stringify('Hello from Lambda!'),
+    };
+    return response;
 };
 
 function isEmptyJson(obj){
-    return !Object.keys(obj).length;
+  return !Object.keys(obj).length;
 }
 
 exports.disconnect = async (event) => {
