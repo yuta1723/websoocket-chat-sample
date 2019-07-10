@@ -7,7 +7,7 @@ var DDB = new AWS.DynamoDB({ apiVersion : "2012-10-08"});
 var docClient = new AWS.DynamoDB.DocumentClient();
 
 const ROOM_TABLE_NAME = 'websocket-room-table';
-
+const CONNECTION_ID_TABLE_NAME = 'websocket-connection-table';
 
 exports.connect = async (event) => {
     console.log('connect : ' + JSON.stringify(event));
@@ -33,17 +33,17 @@ exports.connect = async (event) => {
     let getParams = {
         TableName : ROOM_TABLE_NAME,
         Key : {
-          uniqueRoomId : uniqueRoomId
+            uniqueRoomId : uniqueRoomId
         }
     };
 
     let putParams = {
         TableName : ROOM_TABLE_NAME,
         Item: {
-          uniqueRoomId : uniqueRoomId,
-          roomId : roomId,
-          businessId : businessId,
-          subRoomId: subRoomId
+            uniqueRoomId : uniqueRoomId,
+            roomId : roomId,
+            businessId : businessId,
+            subRoomId: subRoomId
         }
     };
 
@@ -57,8 +57,19 @@ exports.connect = async (event) => {
     }
 
 
+    var connectionId = event.requestContext.connectionId;
+    var putConnectionTableData = {
+        TableName : CONNECTION_ID_TABLE_NAME,
+        Item: {
+            roomId : uniqueRoomId,
+            connectionId : connectionId
+        }
+    };
 
-    // TODO implement
+    var data2 = await docClient.put(putConnectionTableData).promise();
+
+
+    // // TODO implement
     const response = {
         statusCode: 200,
         body: JSON.stringify('Hello from Lambda!'),
