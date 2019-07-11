@@ -134,8 +134,6 @@ exports.disconnect = async (event) => {
     return response;
 };
 
-// 07/1
-// sendMessage アクションを受け取れないため、一旦defaultに実装する。
 exports.default = async (event) => {
     console.log('default : ' + JSON.stringify(event));
 
@@ -147,10 +145,20 @@ exports.default = async (event) => {
     var connectionId = event.requestContext.connectionId;
     console.log('connectionID = ' + connectionId);
 
-    var postParams = {
-        Data: JSON.parse(event.body).data
-    };
+    // ルームにいるユーザーを取得
 
+
+
+    // 接続先にのみメッセージを返却
+    var pushData = {};
+    pushData['commandType'] = 'deliverMessage';
+    pushData['message'] = JSON.parse(event.body).message;
+    console.log('default : postParams = ' + JSON.stringify(pushData));
+
+    var postParams = {
+        Data: JSON.stringify(pushData),
+        ConnectionId : connectionId
+    };
     postParams.ConnectionId = connectionId;
     apigwManagementApi.postToConnection(postParams,function (err, data) {
         if (err) {
@@ -161,11 +169,10 @@ exports.default = async (event) => {
     }).promise();
 
     // const response = {
-    //       statusCode: 200,
+    //       statusCode: 200,s
     //       body: JSON.stringify('Hello from Lambda!'),
     // };
     // return response;
-
 };
 
 exports.sendMessage = async (event) => {
