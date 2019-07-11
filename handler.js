@@ -129,15 +129,19 @@ exports.default = async (event) => {
     };
 
     postParams.ConnectionId = connectionId;
-    apigwManagementApi.postToConnection(postParams).promise();
+    apigwManagementApi.postToConnection(postParams,function (err, data) {
+        if (err) {
+            console.error("Unable to Send Message. Error JSON:", JSON.stringify(err, null, 2));
+        } else {
+            console.log("sendMessage succeeded:", JSON.stringify(data, null, 2));
+        }
+    }).promise();
 
     // const response = {
     //       statusCode: 200,
     //       body: JSON.stringify('Hello from Lambda!'),
     // };
     // return response;
-
-
 
 };
 
