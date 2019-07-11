@@ -134,6 +134,8 @@ exports.disconnect = async (event) => {
     return response;
 };
 
+// 07/1
+// sendMessage アクションを受け取れないため、一旦defaultに実装する。
 exports.default = async (event) => {
     console.log('default : ' + JSON.stringify(event));
 
@@ -143,11 +145,33 @@ exports.default = async (event) => {
     });
 
     var connectionId = event.requestContext.connectionId;
-    console.log('connectionID = ' + connectionId);
+    var uniqueRoomId = JSON.parse(event.body).uniqueRoomId;
+    console.log('DEFAULT : connectionID = ' + connectionId + ' uniqueRoomId = ' + uniqueRoomId);
+
 
     // ルームにいるユーザーを取得
+    var scanParam = {
+        TableName : CONNECTION_ID_TABLE_NAME,
+        FilterExpression: 'roomId = :roomId',
+        ExpressionAttributeValues:{
+            ':roomId': uniqueRoomId
+        }
+    };
+    var connections = [];
+    await docClient.scan(scanParam,function (err, data) {
+        if (err) {
+            console.error("Unable to Send Message. Error JSON:", JSON.stringify(err, null, 2));
+        } else {
+            console.log("DEFAULT succeeded:");
+            data.Items.forEach(function(item) {
+                console.log(" - roomId = ", item.roomId + ": connectionId =" + item.connectionId);
+                connections.push(item.connectionId);
+            });
+        }
+    }).promise();
 
 
+    // console.log('connections = ' + JSON.stringify(connections));
 
     // 接続先にのみメッセージを返却
     var pushData = {};
