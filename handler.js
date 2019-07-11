@@ -23,21 +23,23 @@ exports.connect = async (event) => {
     }
 
     let roomId = event.queryStringParameters.roomId;
-    // let businessId = event.queryStringParameters.businessId;
-    let businessId = "aaaa";
+    let businessId = event.queryStringParameters.businessId;
     let subRoomId = '0';
 
     console.log('roomId = ' + roomId + 'businessId = ' + businessId);
 
     let uniqueRoomId = businessId + '_' + roomId + '_' + subRoomId;
 
+    // ルームが存在するかのチェック
     let getParams = {
         TableName : ROOM_TABLE_NAME,
         Key : {
             uniqueRoomId : uniqueRoomId
         }
     };
+    var roomData = await docClient.get(getParams).promise();
 
+    // ルームテーブルにルーム追加
     let putParams = {
         TableName : ROOM_TABLE_NAME,
         Item: {
@@ -47,9 +49,6 @@ exports.connect = async (event) => {
             subRoomId: subRoomId
         }
     };
-
-    var roomData = await docClient.get(getParams).promise();
-
     console.log('roomData = ' + JSON.stringify(roomData, null, 2));
     if (isEmptyJson(roomData)) {
         console.log('EMPTY');
@@ -57,7 +56,7 @@ exports.connect = async (event) => {
         console.log('data = ' + JSON.stringify(data, null, 2));
     }
 
-
+    // コネクションテーブルにconnectionID追加
     var connectionId = event.requestContext.connectionId;
     var putConnectionTableData = {
         TableName : CONNECTION_ID_TABLE_NAME,
@@ -66,16 +65,15 @@ exports.connect = async (event) => {
             connectionId : connectionId
         }
     };
-
     var data2 = await docClient.put(putConnectionTableData).promise();
 
+    // 接続元にuniqueRoomIdを返却
     var apigwManagementApi = new AWS.ApiGatewayManagementApi({
         apiVersion: "2018-11-29",
         endpoint: event.requestContext.domainName + "/" + event.requestContext.stage
     });
 
     var pushData = {};
-
     pushData['commandType'] = 'readyChat';
     pushData['uniqueRoomId'] = uniqueRoomId;
 
@@ -85,7 +83,6 @@ exports.connect = async (event) => {
         Data: JSON.stringify(pushData),
         ConnectionId : connectionId
     };
-
     apigwManagementApi.postToConnection(postParams,function (err, data) {
         if (err) {
             console.error("Unable to Send Message. Error JSON:", JSON.stringify(err, null, 2));
