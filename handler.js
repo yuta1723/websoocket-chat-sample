@@ -134,8 +134,6 @@ exports.disconnect = async (event) => {
     return response;
 };
 
-// 07/1
-// sendMessage アクションを受け取れないため、一旦defaultに実装する。
 exports.default = async (event) => {
     console.log('default : ' + JSON.stringify(event));
 
@@ -164,7 +162,7 @@ exports.default = async (event) => {
         } else {
             console.log("DEFAULT succeeded:");
             data.Items.forEach(function(item) {
-                console.log(" - roomId = ", item.roomId + ": connectionId =" + item.connectionId);
+                // console.log(" - roomId = ", item.roomId + ": connectionId =" + item.connectionId);
                 connections.push(item.connectionId);
             });
         }
@@ -173,30 +171,57 @@ exports.default = async (event) => {
 
     // console.log('connections = ' + JSON.stringify(connections));
 
-    // 接続先にのみメッセージを返却
-    var pushData = {};
-    pushData['commandType'] = 'deliverMessage';
-    pushData['message'] = JSON.parse(event.body).message;
-    console.log('default : postParams = ' + JSON.stringify(pushData));
+    connections.forEach(function sendMessage(cid) {
+        // console.log('connectionId = ' + cid);
 
-    var postParams = {
-        Data: JSON.stringify(pushData),
-        ConnectionId : connectionId
-    };
-    postParams.ConnectionId = connectionId;
-    apigwManagementApi.postToConnection(postParams,function (err, data) {
-        if (err) {
-            console.error("Unable to Send Message. Error JSON:", JSON.stringify(err, null, 2));
-        } else {
-            console.log("sendMessage succeeded:", JSON.stringify(data, null, 2));
-        }
-    }).promise();
+        var pushData = {};
+        pushData['commandType'] = 'deliverMessage';
+        pushData['message'] = JSON.parse(event.body).message;
+        // console.log('default : postParams = ' + JSON.stringify(pushData));
+
+        var postParams = {
+            Data: JSON.stringify(pushData),
+            ConnectionId : cid
+        };
+        console.log('default : postParams = ' + JSON.stringify(postParams));
+
+        apigwManagementApi.postToConnection(postParams,function (err, data) {
+            if (err) {
+                console.error("Unable to Send Message. Error JSON:", JSON.stringify(err, null, 2));
+            } else {
+                console.log("sendMessage succeeded:", JSON.stringify(data, null, 2));
+            }
+        }).promise();
+
+
+        // body...
+    });
+
+    // 接続先にのみメッセージを返却
+    // var pushData = {};
+    // pushData['commandType'] = 'deliverMessage';
+    // pushData['message'] = JSON.parse(event.body).message;
+    // console.log('default : postParams = ' + JSON.stringify(pushData));
+
+    // var postParams = {
+    //     Data: JSON.stringify(pushData),
+    //     ConnectionId : connectionId
+    // };
+    // postParams.ConnectionId = connectionId;
+    // apigwManagementApi.postToConnection(postParams,function (err, data) {
+    //   if (err) {
+    //     console.error("Unable to Send Message. Error JSON:", JSON.stringify(err, null, 2));
+    //   } else {
+    //     console.log("sendMessage succeeded:", JSON.stringify(data, null, 2));
+    //   }
+    // }).promise();
 
     // const response = {
     //       statusCode: 200,s
     //       body: JSON.stringify('Hello from Lambda!'),
     // };
     // return response;
+
 };
 
 exports.sendMessage = async (event) => {
