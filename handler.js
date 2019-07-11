@@ -23,7 +23,8 @@ exports.connect = async (event) => {
     }
 
     let roomId = event.queryStringParameters.roomId;
-    let businessId = event.queryStringParameters.businessId;
+    // let businessId = event.queryStringParameters.businessId;
+    let businessId = "aaaa";
     let subRoomId = '0';
 
     console.log('roomId = ' + roomId + 'businessId = ' + businessId);
@@ -67,6 +68,31 @@ exports.connect = async (event) => {
     };
 
     var data2 = await docClient.put(putConnectionTableData).promise();
+
+    var apigwManagementApi = new AWS.ApiGatewayManagementApi({
+        apiVersion: "2018-11-29",
+        endpoint: event.requestContext.domainName + "/" + event.requestContext.stage
+    });
+
+    var pushData = {};
+
+    pushData['commandType'] = 'readyChat';
+    pushData['uniqueRoomId'] = uniqueRoomId;
+
+    console.log('connect : postParams = ' + JSON.stringify(pushData));
+
+    var postParams = {
+        Data: JSON.stringify(pushData),
+        ConnectionId : connectionId
+    };
+
+    apigwManagementApi.postToConnection(postParams,function (err, data) {
+        if (err) {
+            console.error("Unable to Send Message. Error JSON:", JSON.stringify(err, null, 2));
+        } else {
+            console.log("sendMessage succeeded:", JSON.stringify(data, null, 2));
+        }
+    }).promise();
 
 
     // // TODO implement
