@@ -1,14 +1,14 @@
 var AWS = require ('aws-sdk');
 AWS.config.update({ region : process.env.AWS_REGION});
 
-// require('aws-sdk/client/apigatewaymanagementapi');
-
 var docClient = new AWS.DynamoDB.DocumentClient();
 
 const CONNECTION_ID_TABLE_NAME = 'websocket-connection-table';
 
+const TAG = '[DISCONNECT]';
+
 exports.disconnect = async (event) => {
-    console.log('disconnect : ' + JSON.stringify(event));
+    console.log(TAG + ' event =' + JSON.stringify(event));
 
     var connectionId = event.requestContext.connectionId;
     console.log('connectionId = ' + connectionId);

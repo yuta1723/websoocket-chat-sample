@@ -5,8 +5,10 @@ var docClient = new AWS.DynamoDB.DocumentClient();
 
 const CONNECTION_ID_TABLE_NAME = 'websocket-connection-table';
 
+const TAG = '[DEFAULT]';
+
 exports.default = async (event) => {
-    console.log('default : ' + JSON.stringify(event));
+    console.log(TAG + ' event =' + JSON.stringify(event));
 
     var apigwManagementApi = new AWS.ApiGatewayManagementApi({
         apiVersion: "2018-11-29",

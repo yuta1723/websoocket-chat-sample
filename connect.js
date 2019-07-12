@@ -6,8 +6,10 @@ var docClient = new AWS.DynamoDB.DocumentClient();
 const ROOM_TABLE_NAME = 'websocket-room-table';
 const CONNECTION_ID_TABLE_NAME = 'websocket-connection-table';
 
+const TAG = '[CONNECT]';
+
 exports.connect = async (event) => {
-    console.log('connect : ' + JSON.stringify(event));
+    console.log(TAG + ' event =' + JSON.stringify(event));
 
     if (event.queryStringParameters === undefined || event.queryStringParameters.roomId === undefined ) {
         console.error("RoomId is empty");
