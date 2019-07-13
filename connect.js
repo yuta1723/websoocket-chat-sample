@@ -8,6 +8,18 @@ const CONNECTION_ID_TABLE_NAME = 'websocket-connection-table';
 
 const TAG = '[CONNECT]';
 
+var apigwManagementApi = new AWS.ApiGatewayManagementApi({
+    apiVersion: "2018-11-29"
+});
+
+var callBackFunc = function(err, data) {
+    if (err) {
+        console.error(TAG + "Unable to Send Message. Error JSON:", JSON.stringify(err, null, 2));
+    } else {
+        console.log(TAG + "sendMessage succeeded:", JSON.stringify(data, null, 2));
+    }
+}
+
 exports.connect = async (event) => {
     console.log(TAG + ' event =' + JSON.stringify(event));
 
@@ -66,32 +78,29 @@ exports.connect = async (event) => {
     };
     var data2 = await docClient.put(putConnectionTableData).promise();
 
-    // 接続元にuniqueRoomIdを返却
-    var apigwManagementApi = new AWS.ApiGatewayManagementApi({
-        apiVersion: "2018-11-29",
-        endpoint: event.requestContext.domainName + "/" + event.requestContext.stage
-    });
-
     var pushData = {};
     pushData['commandType'] = 'readyChat';
     pushData['uniqueRoomId'] = uniqueRoomId;
 
-    console.log('connect : postParams = ' + JSON.stringify(pushData));
+    // 接続元にuniqueRoomIdを返却
+    apigwManagementApi.endpoint = event.requestContext.domainName + '/' + event.requestContext.stage;
 
     var postParams = {
         Data: JSON.stringify(pushData),
         ConnectionId : connectionId
     };
-    apigwManagementApi.postToConnection(postParams,function (err, data) {
-        if (err) {
-            console.error("Unable to Send Message. Error JSON:", JSON.stringify(err, null, 2));
+    console.log(TAG + 'postParams = ' + JSON.stringify(postParams));
+    try {
+        await apigwManagementApi.postToConnection(postParams,callBackFunc).promise();
+    } catch (e) {
+        console.log(TAG + 'POST MESSAGE error : ' + e);
+        if (e.statusCode === 410) {
+            // await docClient.delete({ TableName: CONNECTION_ID_TABLE_NAME, Key: { connectionId: connectionId }}).promise();
         } else {
-            console.log("sendMessage succeeded:", JSON.stringify(data, null, 2));
+            throw e;
         }
-    }).promise();
+    }
 
-
-    // // TODO implement
     const response = {
         statusCode: 200,
         body: JSON.stringify('Hello from Lambda!'),
@@ -100,7 +109,7 @@ exports.connect = async (event) => {
 };
 
 function isEmptyJson(obj){
-  return !Object.keys(obj).length;
+    return !Object.keys(obj).length;
 }
 
 
