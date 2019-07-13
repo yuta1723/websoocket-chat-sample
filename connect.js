@@ -78,28 +78,28 @@ exports.connect = async (event) => {
     };
     var data2 = await docClient.put(putConnectionTableData).promise();
 
-    var pushData = {};
-    pushData['commandType'] = 'readyChat';
-    pushData['uniqueRoomId'] = uniqueRoomId;
-
-    // 接続元にuniqueRoomIdを返却
-    apigwManagementApi.endpoint = event.requestContext.domainName + '/' + event.requestContext.stage;
-
-    var postParams = {
-        Data: JSON.stringify(pushData),
-        ConnectionId : connectionId
-    };
-    console.log(TAG + 'postParams = ' + JSON.stringify(postParams));
-    try {
-        await apigwManagementApi.postToConnection(postParams,callBackFunc).promise();
-    } catch (e) {
-        console.log(TAG + 'POST MESSAGE error : ' + e);
-        if (e.statusCode === 410) {
-            // await docClient.delete({ TableName: CONNECTION_ID_TABLE_NAME, Key: { connectionId: connectionId }}).promise();
-        } else {
-            throw e;
-        }
-    }
+    // var pushData = {};
+    // pushData['commandType'] = 'readyChat';
+    // pushData['uniqueRoomId'] = uniqueRoomId;
+    //
+    // // 接続元にuniqueRoomIdを返却
+    // apigwManagementApi.endpoint = event.requestContext.domainName + '/' + event.requestContext.stage;
+    //
+    // var postParams = {
+    //     Data: JSON.stringify(pushData),
+    //     ConnectionId : connectionId
+    // };
+    // console.log(TAG + 'postParams = ' + JSON.stringify(postParams));
+    // try {
+    //     await apigwManagementApi.postToConnection(postParams,callBackFunc).promise();
+    // } catch (e) {
+    //     console.log(TAG + 'POST MESSAGE error : ' + e);
+    //     if (e.statusCode === 410) {
+    //         // await docClient.delete({ TableName: CONNECTION_ID_TABLE_NAME, Key: { connectionId: connectionId }}).promise();
+    //     } else {
+    //         throw e;
+    //     }
+    // }
 
     const response = {
         statusCode: 200,
