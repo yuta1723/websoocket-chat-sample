@@ -118,6 +118,7 @@ exports.sendMessage = async (event) => {
 };
 
 // カスタムルートが全然発火されなかったため一旦defaultに実装。
+// → API GW側でデプロイを行ってないからでした。
 async function joinRoom(event) {
     var connectionId = event.requestContext.connectionId;
     console.log('joinRoom : connectionID = ' + connectionId);
@@ -139,9 +140,10 @@ async function joinRoom(event) {
 
     var uniqueRoomId = 'aaa';
 
-    var pushData = {};
-    pushData['commandType'] = 'readyChat';
-    pushData['uniqueRoomId'] = uniqueRoomId;
+    var pushData = {
+        commandType: 'readyChat',
+        uniqueRoomId: uniqueRoomId
+    };
 
     var apigwManagementApi = new AWS.ApiGatewayManagementApi({
         apiVersion: "2018-11-29",
