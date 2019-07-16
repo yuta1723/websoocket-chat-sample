@@ -72,7 +72,7 @@ exports.connect = async (event) => {
     var putConnectionTableData = {
         TableName : CONNECTION_ID_TABLE_NAME,
         Item: {
-            roomId : uniqueRoomId,
+            uniqueRoomId : uniqueRoomId,
             connectionId : connectionId
         }
     };
