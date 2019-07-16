@@ -3,8 +3,6 @@ AWS.config.update({ region : process.env.AWS_REGION});
 
 var docClient = new AWS.DynamoDB.DocumentClient();
 
-const CONNECTION_ID_TABLE_NAME = 'websocket-connection-table';
-
 const TAG = '[DEFAULT]';
 
 exports.default = async (event) => {
@@ -17,12 +15,12 @@ exports.default = async (event) => {
 
     var connectionId = event.requestContext.connectionId;
     var uniqueRoomId = JSON.parse(event.body).uniqueRoomId;
-    console.log('DEFAULT : connectionID = ' + connectionId + ' uniqueRoomId = ' + uniqueRoomId);
+    console.log(TAG + ' connectionID = ' + connectionId + ' uniqueRoomId = ' + uniqueRoomId);
 
 
     // ルームにいるユーザーを取得
     var scanParam = {
-        TableName : CONNECTION_ID_TABLE_NAME,
+        TableName : process.env.CONNECTION_TABLE,
         FilterExpression: 'roomId = :roomId',
         ExpressionAttributeValues:{
             ':roomId': uniqueRoomId
@@ -31,9 +29,10 @@ exports.default = async (event) => {
     var connections = [];
     await docClient.scan(scanParam,function (err, data) {
         if (err) {
-            console.error("Unable to Send Message. Error JSON:", JSON.stringify(err, null, 2));
+            console.error(TAG + "Failed to SCAN " + process.env.CONNECTION_TABLE,
+                JSON.stringify(err, null, 2));
         } else {
-            console.log("DEFAULT succeeded:");
+            console.log(TAG + "Successed to SCAN " + process.env.CONNECTION_TABLE);
             data.Items.forEach(function(item) {
                 // console.log(" - roomId = ", item.roomId + ": connectionId =" + item.connectionId);
                 connections.push(item.connectionId);
@@ -46,12 +45,10 @@ exports.default = async (event) => {
 
     connections.forEach(function sendMessage(cid) {
         // console.log('connectionId = ' + cid);
-
-        var pushData = {};
-        pushData['commandType'] = 'deliverMessage';
-        pushData['message'] = JSON.parse(event.body).message;
-        // console.log('default : postParams = ' + JSON.stringify(pushData));
-
+        var pushData = {
+            commandType: 'deliverMessage',
+            message: JSON.parse(event.body).message
+        };
         var postParams = {
             Data: JSON.stringify(pushData),
             ConnectionId : cid
@@ -60,9 +57,9 @@ exports.default = async (event) => {
 
         apigwManagementApi.postToConnection(postParams,function (err, data) {
             if (err) {
-                console.error("Unable to Send Message. Error JSON:", JSON.stringify(err, null, 2));
+                console.error(TAG + "Unable to Send Message. Error JSON:", JSON.stringify(err, null, 2));
             } else {
-                console.log("sendMessage succeeded:", JSON.stringify(data, null, 2));
+                console.log(TAG + "sendMessage succeeded:", JSON.stringify(data, null, 2));
             }
         }).promise();
     });
@@ -91,24 +88,6 @@ exports.default = async (event) => {
     //       body: JSON.stringify('Hello from Lambda!'),
     // };
     // return response;
-
-};
-
-// 仮で作ったクライアントページだと、sendMessageのルートが発火されなかったため、一旦defaultの実装
-exports.sendMessage = async (event) => {
-    console.log('sendMessage : ' + JSON.stringify(event));
-
-    let uniqueRoomId = event.uniqueRoomId;
-    console.log('uniqueRoomId = ' + uniqueRoomId);
-
-    var scanParams = {
-        TableName : CONNECTION_ID_TABLE_NAME,
-        FilterExpression: 'RoomId = :roomid',
-    };
-
-    // var connection = docClient.scan({
-    //
-    // })
 
 };
 

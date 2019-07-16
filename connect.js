@@ -3,22 +3,10 @@ AWS.config.update({ region : process.env.AWS_REGION});
 
 var docClient = new AWS.DynamoDB.DocumentClient();
 
-const ROOM_TABLE_NAME = 'websocket-room-table';
-const CONNECTION_ID_TABLE_NAME = 'websocket-connection-table';
+// const ROOM_TABLE_NAME = 'websocket-room-table';
+// const CONNECTION_ID_TABLE_NAME = 'websocket-connection-table';
 
 const TAG = '[CONNECT]';
-
-var apigwManagementApi = new AWS.ApiGatewayManagementApi({
-    apiVersion: "2018-11-29"
-});
-
-var callBackFunc = function(err, data) {
-    if (err) {
-        console.error(TAG + "Unable to Send Message. Error JSON:", JSON.stringify(err, null, 2));
-    } else {
-        console.log(TAG + "sendMessage succeeded:", JSON.stringify(data, null, 2));
-    }
-}
 
 exports.connect = async (event) => {
     console.log(TAG + ' event =' + JSON.stringify(event));
@@ -43,7 +31,7 @@ exports.connect = async (event) => {
 
     // ルームが存在するかのチェック
     let getParams = {
-        TableName : ROOM_TABLE_NAME,
+        TableName : process.env.CONNECTION_TABLE, // lambdaに指定した環境変数が実行される
         Key : {
             uniqueRoomId : uniqueRoomId
         }
@@ -52,7 +40,7 @@ exports.connect = async (event) => {
 
     // ルームテーブルにルーム追加
     let putParams = {
-        TableName : ROOM_TABLE_NAME,
+        TableName : process.env.ROOM_TABLE,
         Item: {
             uniqueRoomId : uniqueRoomId,
             roomId : roomId,
@@ -70,13 +58,14 @@ exports.connect = async (event) => {
     // コネクションテーブルにconnectionID追加
     var connectionId = event.requestContext.connectionId;
     var putConnectionTableData = {
-        TableName : CONNECTION_ID_TABLE_NAME,
+        TableName : process.env.CONNECTION_TABLE,
         Item: {
             uniqueRoomId : uniqueRoomId,
             connectionId : connectionId
         }
     };
-    var data2 = await docClient.put(putConnectionTableData).promise();
+
+    await docClient.put(putConnectionTableData).promise();
 
     // var pushData = {};
     // pushData['commandType'] = 'readyChat';

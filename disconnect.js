@@ -3,8 +3,6 @@ AWS.config.update({ region : process.env.AWS_REGION});
 
 var docClient = new AWS.DynamoDB.DocumentClient();
 
-const CONNECTION_ID_TABLE_NAME = 'websocket-connection-table';
-
 const TAG = '[DISCONNECT]';
 
 exports.disconnect = async (event) => {
@@ -13,7 +11,7 @@ exports.disconnect = async (event) => {
     var connectionId = event.requestContext.connectionId;
     console.log('connectionId = ' + connectionId);
     var deleteParam = {
-        TableName : CONNECTION_ID_TABLE_NAME,
+        TableName : process.env.CONNECTION_TABLE,
         Key : {
             connectionId : connectionId
         }

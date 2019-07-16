@@ -3,8 +3,6 @@ AWS.config.update({ region : process.env.AWS_REGION});
 
 var docClient = new AWS.DynamoDB.DocumentClient();
 
-const CONNECTION_ID_TABLE_NAME = 'websocket-connection-table';
-
 const TAG = '[JOIN_ROOM]';
 
 
@@ -16,7 +14,7 @@ exports.joinRoom = async function (event) {
 
     // ルームが存在するかのチェック
     let getParams = {
-        TableName : CONNECTION_ID_TABLE_NAME,
+        TableName : process.env.CONNECTION_TABLE,
         Key : {
             connectionId : connectionId
         }
