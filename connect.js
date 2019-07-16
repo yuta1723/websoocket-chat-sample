@@ -31,7 +31,7 @@ exports.connect = async (event) => {
 
     // ルームが存在するかのチェック
     let getParams = {
-        TableName : process.env.CONNECTION_TABLE, // lambdaに指定した環境変数が実行される
+        TableName : process.env.ROOM_TABLE, // lambdaに指定した環境変数が実行される
         Key : {
             uniqueRoomId : uniqueRoomId
         }

@@ -5,12 +5,9 @@ var docClient = new AWS.DynamoDB.DocumentClient();
 
 const TAG = '[JOIN_ROOM]';
 
-
-// カスタムルートが全然発火されなかったため一旦defaultに実装。
-// → API GW側でデプロイを行ってないからでした。
 exports.joinRoom = async function (event) {
     var connectionId = event.requestContext.connectionId;
-    console.log('joinRoom : connectionID = ' + connectionId);
+    console.log(TAG + 'connectionID = ' + connectionId);
 
     // ルームが存在するかのチェック
     let getParams = {

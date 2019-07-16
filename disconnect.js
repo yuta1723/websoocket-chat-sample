@@ -9,7 +9,7 @@ exports.disconnect = async (event) => {
     console.log(TAG + ' event =' + JSON.stringify(event));
 
     var connectionId = event.requestContext.connectionId;
-    console.log('connectionId = ' + connectionId);
+    console.log(TAG + 'connectionId = ' + connectionId);
     var deleteParam = {
         TableName : process.env.CONNECTION_TABLE,
         Key : {
@@ -34,6 +34,3 @@ exports.disconnect = async (event) => {
     };
     return response;
 };
-
-//メモ
-// DynamoDBは、PK,SKを指定したDBの場合、更新、削除を行う際はPK,SK両方必要。

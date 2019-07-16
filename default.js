@@ -21,80 +21,41 @@ exports.default = async (event) => {
     // ルームにいるユーザーを取得
     var scanParam = {
         TableName : process.env.CONNECTION_TABLE,
-        FilterExpression: 'roomId = :roomId',
+        FilterExpression: 'uniqueRoomId = :roomId',
         ExpressionAttributeValues:{
             ':roomId': uniqueRoomId
         }
     };
-    var connections = [];
-    await docClient.scan(scanParam,function (err, data) {
-        if (err) {
-            console.error(TAG + "Failed to SCAN " + process.env.CONNECTION_TABLE,
-                JSON.stringify(err, null, 2));
-        } else {
-            console.log(TAG + "Successed to SCAN " + process.env.CONNECTION_TABLE);
-            data.Items.forEach(function(item) {
-                // console.log(" - roomId = ", item.roomId + ": connectionId =" + item.connectionId);
-                connections.push(item.connectionId);
-            });
-        }
-    }).promise();
+    let connections = await docClient.scan(scanParam).promise();
+    console.log(TAG + 'connections = '+ JSON.stringify(connections.Items));
 
+    var pushData = {
+        commandType: 'deliverMessage',
+        message: JSON.parse(event.body).message
+    };
+    await Promise.all(connections.Items.map(async ({ connectionId }) => {
+        try {
+            var params = {
+                Data: JSON.stringify(pushData),
+                ConnectionId : connectionId
 
-    // console.log('connections = ' + JSON.stringify(connections));
-
-    connections.forEach(function sendMessage(cid) {
-        // console.log('connectionId = ' + cid);
-        var pushData = {
-            commandType: 'deliverMessage',
-            message: JSON.parse(event.body).message
-        };
-        var postParams = {
-            Data: JSON.stringify(pushData),
-            ConnectionId : cid
-        };
-        console.log('default : postParams = ' + JSON.stringify(postParams));
-
-        apigwManagementApi.postToConnection(postParams,function (err, data) {
-            if (err) {
-                console.error(TAG + "Unable to Send Message. Error JSON:", JSON.stringify(err, null, 2));
+            };
+            console.log('SEND MESSAGE params= ' + JSON.stringify(params));
+            await apigwManagementApi.postToConnection(params).promise();
+        } catch (e) {
+            console.log('ERROR');
+            if (e.statusCode === 410) {
+                // await dynamodb.delete({ TableName: process.env.CONNECTIONS_TABLE, Key: { ConnectionId: ConnectionId }}).promise();
             } else {
-                console.log(TAG + "sendMessage succeeded:", JSON.stringify(data, null, 2));
+                throw e;
             }
-        }).promise();
-    });
+        }
+    }));
 
-    // 接続先にのみメッセージを返却
-    // var pushData = {};
-    // pushData['commandType'] = 'deliverMessage';
-    // pushData['message'] = JSON.parse(event.body).message;
-    // console.log('default : postParams = ' + JSON.stringify(pushData));
-
-    // var postParams = {
-    //     Data: JSON.stringify(pushData),
-    //     ConnectionId : connectionId
-    // };
-    // postParams.ConnectionId = connectionId;
-    // apigwManagementApi.postToConnection(postParams,function (err, data) {
-    //   if (err) {
-    //     console.error("Unable to Send Message. Error JSON:", JSON.stringify(err, null, 2));
-    //   } else {
-    //     console.log("sendMessage succeeded:", JSON.stringify(data, null, 2));
-    //   }
-    // }).promise();
-
-    // const response = {
-    //       statusCode: 200,s
-    //       body: JSON.stringify('Hello from Lambda!'),
-    // };
-    // return response;
-
+    // レスポンス返さないとエラーになる。
+    var response = {
+        statusCode: 200,
+        body: JSON.stringify('Hello from Lambda!'),
+    };
+    return response;
 };
-
-function isEmptyJson(obj){
-    return !Object.keys(obj).length;
-}
-
-
-//メモ
-// DynamoDBは、PK,SKを指定したDBの場合、更新、削除を行う際はPK,SK両方必要。
