@@ -16,18 +16,18 @@ exports.connect = async (event) => {
         return { statusCode: 400, body: JSON.stringify('Bad Request')};
     }
 
-    if (event.queryStringParameters === undefined || event.queryStringParameters.businessId === undefined ) {
-        console.error("businessId is empty");
+    if (event.queryStringParameters === undefined || event.queryStringParameters.accountId === undefined ) {
+        console.error("accountId is empty");
         return { statusCode: 400, body: JSON.stringify('Bad Request')};
     }
 
     let roomId = event.queryStringParameters.roomId;
-    let businessId = event.queryStringParameters.businessId;
+    let accountId = event.queryStringParameters.accountId;
     let subRoomId = '0';
 
-    console.log('roomId = ' + roomId + 'businessId = ' + businessId);
+    console.log('roomId = ' + roomId + 'accountId = ' + accountId);
 
-    let uniqueRoomId = businessId + '_' + roomId + '_' + subRoomId;
+    let uniqueRoomId = accountId + '_' + roomId + '_' + subRoomId;
 
     // ルームが存在するかのチェック
     let getParams = {
@@ -44,7 +44,7 @@ exports.connect = async (event) => {
         Item: {
             uniqueRoomId : uniqueRoomId,
             roomId : roomId,
-            businessId : businessId,
+            accountId : accountId,
             subRoomId: subRoomId
         }
     };
