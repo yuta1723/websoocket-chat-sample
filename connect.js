@@ -19,18 +19,18 @@ const ROOM_STATE_END = 2; // ルーム削除待ち
 exports.connect = async (event) => {
     console.log(TAG + ' event =' + JSON.stringify(event));
 
-    if (event.queryStringParameters === undefined || event.queryStringParameters.roomId === undefined ) {
+    if (event.queryStringParameters === undefined || event.queryStringParameters.room_id === undefined ) {
         console.error("RoomId is empty");
         return { statusCode: 400, body: JSON.stringify('Bad Request')};
     }
 
-    if (event.queryStringParameters === undefined || event.queryStringParameters.accountId === undefined ) {
+    if (event.queryStringParameters === undefined || event.queryStringParameters.account_id === undefined ) {
         console.error("accountId is empty");
         return { statusCode: 400, body: JSON.stringify('Bad Request')};
     }
 
-    let roomId = event.queryStringParameters.roomId;
-    let accountId = event.queryStringParameters.accountId;
+    let roomId = event.queryStringParameters.room_id;
+    let accountId = event.queryStringParameters.account_id;
     let subRoomId = '0';
 
     console.log('roomId = ' + roomId + 'accountId = ' + accountId);
