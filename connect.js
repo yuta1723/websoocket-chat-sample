@@ -7,6 +7,14 @@ var docClient = new AWS.DynamoDB.DocumentClient();
 // const CONNECTION_ID_TABLE_NAME = 'websocket-connection-table';
 
 const TAG = '[CONNECT]';
+const DELIMITER_UNIQUE_ROOM_ID = '#_#';
+
+const roomExpiredTime = 43200000; // 12 hour
+
+// TODO RENAME
+const ROOM_STATE_BEFORE_START = 0; // チャット開始前
+const ROOM_STATE_OPEN = 1; // チャット中
+const ROOM_STATE_END = 2; // ルーム削除待ち
 
 exports.connect = async (event) => {
     console.log(TAG + ' event =' + JSON.stringify(event));
@@ -27,7 +35,7 @@ exports.connect = async (event) => {
 
     console.log('roomId = ' + roomId + 'accountId = ' + accountId);
 
-    let uniqueRoomId = accountId + '_' + roomId + '_' + subRoomId;
+    let uniqueRoomId = accountId + DELIMITER_UNIQUE_ROOM_ID + roomId + DELIMITER_UNIQUE_ROOM_ID + subRoomId;
 
     // ルームが存在するかのチェック
     let getParams = {
@@ -38,6 +46,8 @@ exports.connect = async (event) => {
     };
     var roomData = await docClient.get(getParams).promise();
 
+    const requestTimeMs = event.requestContext.requestTimeEpock;
+
     // ルームテーブルにルーム追加
     let putParams = {
         TableName : process.env.ROOM_TABLE,
@@ -45,7 +55,10 @@ exports.connect = async (event) => {
             uniqueRoomId : uniqueRoomId,
             roomId : roomId,
             accountId : accountId,
-            subRoomId: subRoomId
+            subRoomId: subRoomId,
+            roomStartTime:requestTimeMs,
+            roomExpiredTime:roomExpiredTime,
+            roomState:ROOM_STATE_OPEN
         }
     };
     console.log('roomData = ' + JSON.stringify(roomData, null, 2));
@@ -66,29 +79,6 @@ exports.connect = async (event) => {
     };
 
     await docClient.put(putConnectionTableData).promise();
-
-    // var pushData = {};
-    // pushData['commandType'] = 'readyChat';
-    // pushData['uniqueRoomId'] = uniqueRoomId;
-    //
-    // // 接続元にuniqueRoomIdを返却
-    // apigwManagementApi.endpoint = event.requestContext.domainName + '/' + event.requestContext.stage;
-    //
-    // var postParams = {
-    //     Data: JSON.stringify(pushData),
-    //     ConnectionId : connectionId
-    // };
-    // console.log(TAG + 'postParams = ' + JSON.stringify(postParams));
-    // try {
-    //     await apigwManagementApi.postToConnection(postParams,callBackFunc).promise();
-    // } catch (e) {
-    //     console.log(TAG + 'POST MESSAGE error : ' + e);
-    //     if (e.statusCode === 410) {
-    //         // await docClient.delete({ TableName: CONNECTION_ID_TABLE_NAME, Key: { connectionId: connectionId }}).promise();
-    //     } else {
-    //         throw e;
-    //     }
-    // }
 
     const response = {
         statusCode: 200,
