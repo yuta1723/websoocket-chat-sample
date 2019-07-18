@@ -3,9 +3,6 @@ AWS.config.update({ region : process.env.AWS_REGION});
 
 var docClient = new AWS.DynamoDB.DocumentClient();
 
-// const ROOM_TABLE_NAME = 'websocket-room-table';
-// const CONNECTION_ID_TABLE_NAME = 'websocket-connection-table';
-
 const TAG = '[CONNECT]';
 const DELIMITER_UNIQUE_ROOM_ID = '#_#';
 
