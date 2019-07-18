@@ -3,7 +3,7 @@ AWS.config.update({ region : process.env.AWS_REGION});
 
 var docClient = new AWS.DynamoDB.DocumentClient();
 
-const VERSION = 2;
+const VERSION = 3;
 
 const TAG = '[CONNECT]';
 const DELIMITER_UNIQUE_ROOM_ID = '#_#';

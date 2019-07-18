@@ -3,7 +3,7 @@ AWS.config.update({ region : process.env.AWS_REGION});
 
 const TAG = '[DEFAULT]';
 
-const VERSION = 2;
+const VERSION = 3;
 
 exports.default = async (event) => {
     console.log(TAG + ' event =' + JSON.stringify(event));

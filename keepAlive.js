@@ -3,7 +3,7 @@ AWS.config.update({ region : process.env.AWS_REGION});
 
 const TAG = '[KEEP_ALIVE]';
 
-const VERSION = 2;
+const VERSION = 3;
 
 exports.default = async (event) => {
 

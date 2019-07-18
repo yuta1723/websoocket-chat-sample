@@ -5,7 +5,7 @@ var docClient = new AWS.DynamoDB.DocumentClient();
 
 const TAG = '[JOIN_ROOM]';
 
-const VERSION = 2;
+const VERSION = 3;
 
 exports.joinRoom = async function (event) {
     var connectionId = event.requestContext.connectionId;

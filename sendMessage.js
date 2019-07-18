@@ -5,7 +5,7 @@ var docClient = new AWS.DynamoDB.DocumentClient();
 
 const TAG = '[SEND_MESSAGE]';
 
-const VERSION = 2;
+const VERSION = 3;
 
 exports.default = async (event) => {
     console.log(TAG + ' event =' + JSON.stringify(event));
