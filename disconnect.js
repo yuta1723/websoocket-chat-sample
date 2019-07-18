@@ -5,6 +5,8 @@ var docClient = new AWS.DynamoDB.DocumentClient();
 
 const TAG = '[DISCONNECT]';
 
+const VERSION = 2;
+
 exports.disconnect = async (event) => {
     console.log(TAG + ' event =' + JSON.stringify(event));
 

@@ -5,6 +5,8 @@ var docClient = new AWS.DynamoDB.DocumentClient();
 
 const TAG = '[DEFAULT]';
 
+const VERSION = 2;
+
 exports.default = async (event) => {
     console.log(TAG + ' event =' + JSON.stringify(event));
 
