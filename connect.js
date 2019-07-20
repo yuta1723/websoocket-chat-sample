@@ -45,7 +45,7 @@ exports.connect = async (event) => {
     };
     var roomData = await docClient.get(getParams).promise();
 
-    const requestTimeMs = event.requestContext.requestTimeEpock;
+    const requestTimeMs = event.requestContext.requestTimeEpoch;
 
     // ルームテーブルにルーム追加
     let putParams = {
